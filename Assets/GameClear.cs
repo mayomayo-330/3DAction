@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;
 
 public class GameClear : MonoBehaviour
 {
+    public AudioClip HitSE;
     public GameObject GameClearCanvas;
     // Start is called before the first frame update
     void Start()
@@ -18,6 +19,7 @@ public class GameClear : MonoBehaviour
     {
         if(NewPlayerController.coinCount == 7)
         {
+            AudioSource.PlayClipAtPoint(HitSE, transform.position);
             GameClearCanvas.SetActive(true);
             Time.timeScale = 0;
         }

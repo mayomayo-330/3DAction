@@ -6,7 +6,7 @@ public class CoinManager : MonoBehaviour
 {
     Collider Coincollider;
     //public AudioSource audioSource;
-    //public AudioClip HitSE;
+    public AudioClip HitSE;
 
     // Start is called before the first frame update
     void Start()
@@ -17,7 +17,7 @@ public class CoinManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        transform.Rotate(new Vector3(1f, 0, 0));
+        transform.Rotate(new Vector3(1.5f, 0, 0));
 
     }
 
@@ -25,8 +25,9 @@ public class CoinManager : MonoBehaviour
     {
         if (other.tag == "Player")
         {
+
+            AudioSource.PlayClipAtPoint(HitSE,transform.position);
             Coincollider.enabled = false;
-            //audioSource.PlayOneShot(HitSE);
             Destroy(this.gameObject);
         }
     }
