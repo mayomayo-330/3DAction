@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class NewPlayerController : MonoBehaviour
 {
@@ -55,10 +56,14 @@ public class NewPlayerController : MonoBehaviour
     //ゲームオーバー処理
     public static int falling;
 
+    //壁ジャンプ
+    private float time;
+
 
     // Start is called before the first frame update
     void Start()
     {
+        time = 3f;
         rb = this.GetComponent<Rigidbody>();
         WeaponCollider.enabled = false;
         coinCount = 0;
@@ -68,6 +73,7 @@ public class NewPlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        time += Time.deltaTime;
         IsGrounded = CheckGrounded();
 
         if (IsGrounded == true)
@@ -153,6 +159,19 @@ public class NewPlayerController : MonoBehaviour
 
             isJump = true;
             PlayerAnimator.SetBool("jump", isJump);
+
+            if (time < 0.09f)
+            {
+                if (Input.GetKeyDown(KeyCode.Space))//  もし、スペースキーがおされたなら、  
+                {
+
+                    //this.transform.forward = this.NormalOfStickingWall;
+
+                    rb.velocity = new Vector3(this.NormalOfStickingWall.x * 15 + rb.velocity.x,
+                    0, this.NormalOfStickingWall.z * 15 + rb.velocity.z);
+                    rb.AddForce(transform.up * Jumppower * 100);//  上にJumpPower分力をかける
+                }
+            }
         }
 
         if(this.transform.position.y <= -100)
@@ -266,21 +285,13 @@ public class NewPlayerController : MonoBehaviour
 
     void OnCollisionEnter(Collision other)//  他オブジェクトに触れた時の処理
     {
-        if (other.gameObject.tag == "Plane")//  もしPlanetというタグがついたオブジェクトに触れたら、
+        if (other.gameObject.tag == "Plane")//  もしPlaneというタグがついたオブジェクトに触れたら、
         {
             normalVector = other.contacts[0].normal;
             if (normalVector.y < 0.02f)
             {
-
-                //if (Input.GetKeyDown(KeyCode.Space))//  もし、スペースキーがおされたなら、  
-                //{
-                //    this.transform.forward = this.NormalOfStickingWall;
-
-                //    rb.velocity = new Vector3(this.NormalOfStickingWall.x * 15 + rb.velocity.x,
-                //    0, this.NormalOfStickingWall.z * 15 + rb.velocity.z);
-                //    transform.eulerAngles = Camera.transform.eulerAngles - rot;
-                //    rb.AddForce(transform.up * Jumppower * 100);//  上にJumpPower分力をかける
-                //}
+                time = 0;
+                
             }
             else
             {
