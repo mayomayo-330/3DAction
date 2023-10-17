@@ -160,7 +160,7 @@ public class NewPlayerController : MonoBehaviour
             isJump = true;
             PlayerAnimator.SetBool("jump", isJump);
 
-            if (time < 0.09f)
+            if (time < 0.1f)
             {
                 if (Input.GetKeyDown(KeyCode.Space))//  もし、スペースキーがおされたなら、  
                 {
