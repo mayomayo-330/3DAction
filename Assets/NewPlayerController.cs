@@ -46,9 +46,12 @@ public class NewPlayerController : MonoBehaviour
 
     public AudioSource audioSource;
     public AudioClip AttackSE;
+    public AudioClip WalljumpSE;
+    public AudioClip DashSE;
 
     //看板処理
-    public GameObject SignboardCanvas;
+    public GameObject SignboardCanvas;    //操作説明
+    public GameObject SignboardCanvas2;     //ハードモード
 
     //コイン処理
     public static int coinCount;
@@ -58,6 +61,7 @@ public class NewPlayerController : MonoBehaviour
 
     //壁ジャンプ
     private float time;
+    public GameObject Effect;
 
 
     // Start is called before the first frame update
@@ -82,8 +86,9 @@ public class NewPlayerController : MonoBehaviour
             z = Input.GetAxisRaw("Vertical");
             movingDirecion = new Vector3(x, 0, z);
             movingDirecion.Normalize();//斜めの距離が長くなるのを防ぎます
-            
 
+
+            //地上キー入力受け取り
             if (Front.f == false)
             {
                 if (z > 0)
@@ -114,7 +119,6 @@ public class NewPlayerController : MonoBehaviour
             }
             movingVelocity = movingDirecion * speedMagnification * PlayerSpeed;
 
-            //Move();
             Jump();
             Attack();
         }
@@ -126,6 +130,7 @@ public class NewPlayerController : MonoBehaviour
             movingDirecion = new Vector3(x, 0, z);
             movingDirecion.Normalize();//斜めの距離が長くなるのを防ぎます
 
+            //空中キー入力受け取り
             if (Front.f == false)
             {
                 if (z != 0)
@@ -157,9 +162,11 @@ public class NewPlayerController : MonoBehaviour
 
             movingVelocity = movingDirecion * speedMagnification * PlayerSpeed;
 
+            // ジャンプアニメーション
             isJump = true;
-            PlayerAnimator.SetBool("jump", isJump);
+            PlayerAnimator.SetBool("jump", isJump); 
 
+            //壁ジャンプ処理
             if (time < 0.1f)
             {
                 if (Input.GetKeyDown(KeyCode.Space))//  もし、スペースキーがおされたなら、  
@@ -170,10 +177,14 @@ public class NewPlayerController : MonoBehaviour
                     rb.velocity = new Vector3(this.NormalOfStickingWall.x * 15 + rb.velocity.x,
                     0, this.NormalOfStickingWall.z * 15 + rb.velocity.z);
                     rb.AddForce(transform.up * Jumppower * 100);//  上にJumpPower分力をかける
+                    audioSource.PlayOneShot(WalljumpSE);
+                    var effect = Instantiate(Effect);
+                    effect.transform.position = new Vector3(this.transform.position.x, this.transform.position.y+2.0f, this.transform.position.z);
                 }
             }
         }
 
+        // 落下でゲームオーバーフラグ
         if(this.transform.position.y <= -100)
         {
             falling = 1;
@@ -184,6 +195,7 @@ public class NewPlayerController : MonoBehaviour
 
     public void FixedUpdate()
     {
+        //カメラ回転させたとき正面方向も回転させる
         cameraForward = Vector3.Scale(Camera.main.transform.forward, new Vector3(1, 0, 1)).normalized;
         moveForward = cameraForward * z + Camera.main.transform.right * x;
         rb.velocity = moveForward * PlayerSpeed * 4 + new Vector3(0, rb.velocity.y, 0);
@@ -193,14 +205,18 @@ public class NewPlayerController : MonoBehaviour
         //前フレームとの位置の差から進行方向を割り出してその方向に回転します。
         Vector3 differenceDis = new Vector3(transform.position.x, 0, transform.position.z) - new Vector3(latestPos.x, 0, latestPos.z);
         latestPos = transform.position;
+
+        // シームレスに方向転換
         if (Mathf.Abs(differenceDis.x) > 0.001f || Mathf.Abs(differenceDis.z) > 0.001f)
         {
+            //止まっているとき
             if (movingDirecion == new Vector3(0, 0, 0))
             {
                 isRun = false;
                 PlayerAnimator.SetBool("run", isRun);
                 return;
             }
+            //移動
             else
             {
                 Quaternion rot = Quaternion.LookRotation(differenceDis);
@@ -210,6 +226,8 @@ public class NewPlayerController : MonoBehaviour
                 PlayerAnimator.SetBool("run", isRun);
             }
         }
+
+        
     }
 
     void Move()
@@ -363,6 +381,7 @@ public class NewPlayerController : MonoBehaviour
                     isJump = true;
                     rb.AddForce(transform.up * Jumppower * 100);//  上にJumpPower分力をかける
                     PlayerAnimator.SetBool("jump", isJump);
+                    audioSource.PlayOneShot(WalljumpSE);
                 }
         }
     }
@@ -376,6 +395,7 @@ public class NewPlayerController : MonoBehaviour
             return;
         }
 
+        // 剣を振る
         if (Input.GetMouseButton(0))
         {
             PlayerAnimator.SetBool("attack", true);
@@ -388,14 +408,16 @@ public class NewPlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
+        //コインに触れると
         if (coincollider == 0 && other.tag == "Coin")
         {
-            coinCount++;
+            coinCount++;  //表示数に+1
             coincollider = 1;
             Invoke("CoinDetect", 1);
         }
     }
 
+    //コインの重複獲得を防ぐ
     private void CoinDetect()
     {
         coincollider = 0;
@@ -404,30 +426,53 @@ public class NewPlayerController : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
+        //看板の前に立つと
         if (other.tag == "signboard")
         {
-            canAttack = false;
+            canAttack = false;  //前では攻撃できなくする
+
+            //攻撃ボタンを押すと
             if (Input.GetMouseButton(0))
             {
-                SignboardCanvas.SetActive(true);
+                SignboardCanvas.SetActive(true);   //操作説明メッセージ表示
             }
         }
+        if (other.tag == "signboard2")
+        {
+            canAttack = false;  //前では攻撃できなくする
+
+            //攻撃ボタンを押すと
+            if (Input.GetMouseButton(0))
+            {
+                SignboardCanvas2.SetActive(true);   //ハードモードメッセージ表示
+            }
+        }
+
     }
 
     private void OnTriggerExit(Collider other)
     {
+        //離れるとメッセージ消す
         if (other.tag == "signboard")
         {
             SignboardCanvas.SetActive(false);
             canAttack = true;
         }
+        //離れるとメッセージ消す
+        if (other.tag == "signboard2")
+        {
+            SignboardCanvas2.SetActive(false);
+            canAttack = true;
+        }
     }
 
+    //剣を振る間は攻撃判定をつける
     void WeaponON()
     {
         WeaponCollider.enabled = true;
     }
 
+    //振りおえると判定を消す
     void WeaponOFF()
     {
         WeaponCollider.enabled = false;
@@ -438,6 +483,11 @@ public class NewPlayerController : MonoBehaviour
     {
         canMove = true;
         canAttack = true;
+    }
+
+    void DashON()
+    {
+        audioSource.PlayOneShot(DashSE);
     }
 
 }

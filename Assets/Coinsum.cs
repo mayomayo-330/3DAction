@@ -16,6 +16,7 @@ public class Coinsum : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // 右上にコインの枚数表示
         coin_sum = NewPlayerController.coinCount;
         Text coin_text = coin_object.GetComponent<Text>();
         coin_text.text = "×" + coin_sum;     

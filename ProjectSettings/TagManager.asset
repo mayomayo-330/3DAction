@@ -10,6 +10,7 @@ TagManager:
   - signboard
   - Plane
   - Coin
+  - signboard2
   layers:
   - Default
   - TransparentFX

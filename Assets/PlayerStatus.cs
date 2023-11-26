@@ -47,14 +47,15 @@ public class PlayerStatus : MonoBehaviour
     {
         if (HP <= 0)
         {
-            var effect = Instantiate(Effect);
+            var effect = Instantiate(Effect);      
             effect.transform.position = this.transform.position;
-            gameover = 1;
+            gameover = 1;       //ゲームオーバーフラグを立てる
             
         }
         float percent = (float)HP / MaxHP;
         HPGage.fillAmount = percent;
 
+        //ダメージをくらうと
         if (isDamege == true)
         {
             // 内部時刻を経過させる
