@@ -22,7 +22,7 @@ public class EnemyController : MonoBehaviour
     void Update()
     {
         var speed = Vector3.zero;
-        speed.z = EnemySpeed;
+        speed.z = EnemySpeed * Time.deltaTime;
         rot = transform.eulerAngles;
 
         if (Target)
@@ -50,7 +50,7 @@ public class EnemyController : MonoBehaviour
 
     private void OnCollisionEnter(Collision other)
     {
-        // 検知したオブジェクトに「Player」のタグがついていれば、そのオブジェクトを追いかける
+        // 壁にぶつかると方向かえる
         if (other.gameObject.tag == "Plane")
         {
             normalVector = other.contacts[0].normal;
